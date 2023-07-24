@@ -1,0 +1,9 @@
+{
+    "extends": "@fizzlab.io/tsconfig/default.json",
+    "include": ["."],
+    "exclude": [
+        "dist",
+        "build",
+        "node_modules"
+    ]
+}

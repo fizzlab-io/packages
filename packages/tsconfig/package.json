@@ -1,0 +1,9 @@
+{
+    "name": "@fizzlab.io/tsconfig",
+    "version": "1.0.0",
+    "author": "Sebastian Inman",
+    "private": true,
+    "files": [
+
+    ]
+}
