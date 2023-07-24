@@ -4,15 +4,16 @@ import { Plugin } from 'vite'
 import chokidar from 'chokidar'
 import prettier from 'prettier'
 import glob from 'fast-glob'
+import createDebugger from 'debug'
 
 import { resolveOptions, type PluginOptions } from './options'
 
-export default function shopifySchemaTemplates(options?: PluginOptions): Plugin {
+export default function shopifySchemaTemplates(config?: PluginOptions): Plugin {
 
-    const templatePattern = /{\"%schema%\": \"(\S+)\"}/g
+    const options = resolveOptions(config)
     const schemaPattern = /{% schema %}(.*){% endschema %}/gms
 
-    const resolvedOptions = resolveOptions(options)
+    const debug = createDebugger('vite-plugin-shopify-schema-templates')
 
     let sectionWatcher: chokidar.FSWatcher
     let schemaWatcher: chokidar.FSWatcher
@@ -21,7 +22,7 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
         filename = filename.endsWith('.json') ? filename : `${filename}.json`
         return `/** TEMPLATE START: ${filename}
         * Last updated ${new Date().toString()}
-        * The following settings were auto-imported from a template.
+        * The following settings were auto-imported from a schema template.
         * Please do not modify the following settings directly.
         */
         ${content}
@@ -38,18 +39,11 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
             const formattedJson = await prettier.format(contentJson, {
                 parser: 'json',
                 trailingComma: 'none',
-                tabWidth: resolvedOptions.jsonTabWidth
+                tabWidth: options.jsonTabWidth
             })
-
-            console.log('formattedJson:\n', formattedJson)
 
             const formattedContent = content.replace(contentJson, `\n${formattedJson}`)
             return formattedContent
-
-        } else {
-
-            console.log('content:\n', content)
-            throw new Error('Unable to match schema pattern')
 
         }
 
@@ -57,7 +51,7 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
 
     function watchSectionFiles() {
 
-        sectionWatcher = chokidar.watch(resolvedOptions.sectionsDir, {
+        sectionWatcher = chokidar.watch(options.sectionsDir, {
             followSymlinks: true,
             ignored: '!*.liquid',
             ignoreInitial: false
@@ -67,24 +61,38 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
 
             if (['add', 'change'].includes(event)) {
 
-                console.log(`Section file changed:`, file)
-
+                const filename = file.split('/').slice(-1)[0]
                 const sectionContent = await fs.readFile(file, 'utf-8')
-                const templateMatches = Array.from(sectionContent.matchAll(templatePattern))
+                if (sectionContent && sectionContent !== '') {
 
-                if (templateMatches && templateMatches[0]) {
+                    const templateMatches = Array.from(sectionContent.matchAll(options.regexPattern))
 
-                    const [templateString, templateName] = templateMatches[0]
-                    const templatePath = path.join(resolvedOptions.schemaDir, `${templateName}.json`)
+                    if (templateMatches && templateMatches[0]) {
 
-                    let templateContent = await fs.readFile(templatePath, 'utf-8')
-                    templateContent = generateTemplateOutput(templateName, templateContent)
+                        const [templateString, templateName] = templateMatches[0]
+                        const templatePath = path.join(options.schemaDir, `${templateName}.json`)
 
-                    const updatedContent = sectionContent.replace(templateString, templateContent)
-                    const formattedContent = await formatJson(updatedContent)
+                        let templateContent = await fs.readFile(templatePath, 'utf-8')
+                        if (templateContent && templateContent !== '') {
 
-                    if (formattedContent && formattedContent !== "") {
-                        await fs.writeFile(file, formattedContent, 'utf-8')
+                            let jsonValue = Array.from(JSON.parse(templateContent))
+                            if (jsonValue && jsonValue.length) {
+
+                                templateContent = JSON.stringify(jsonValue).slice(1, -1)
+                                templateContent = generateTemplateOutput(templateName, templateContent)
+
+                                const updatedContent = sectionContent.replace(templateString, templateContent)
+                                const formattedContent = await formatJson(updatedContent)
+
+                                if (formattedContent && formattedContent !== "") {
+                                    await fs.writeFile(file, formattedContent, 'utf-8')
+                                    debug(`Schema from ${templateName}.json injected into ${filename}`)
+                                }
+
+                            }
+
+                        }
+
                     }
 
                 }
@@ -97,7 +105,7 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
 
     async function watchSchemaFiles() {
 
-        sectionWatcher = chokidar.watch(resolvedOptions.schemaDir, {
+        sectionWatcher = chokidar.watch(options.schemaDir, {
             followSymlinks: true,
             ignored: '!*.json',
             ignoreInitial: false
@@ -107,35 +115,46 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
 
             if (['add', 'change'].includes(event)) {
 
-                console.log(`Schema file changed:`, file)
-
-                const templateContent = await fs.readFile(file, 'utf-8')
-
                 const filename = file.split('/').slice(-1)[0]
-                const commentPattern = new RegExp(`\\/\\*\\* TEMPLATE START: (${filename}).*\\/`, 'gms')
-                const sectionFiles = await glob(path.join(resolvedOptions.sectionsDir, '*.liquid'))
+                debug(`Schema file ${event}: %s`, filename)
 
-                for (const sectionFile of sectionFiles) {
+                let templateContent = await fs.readFile(file, 'utf-8')
+                if (templateContent && templateContent !== '') {
 
-                    let sectionContent = await fs.readFile(sectionFile, 'utf-8')
-                    const sectionMatches = Array.from(sectionContent.matchAll(commentPattern))
+                    let jsonValue = Array.from(JSON.parse(templateContent))
+                    if (jsonValue && jsonValue.length) {
 
-                    if (sectionMatches && sectionMatches[0]) {
+                        templateContent = JSON.stringify(jsonValue).slice(1, -1)
 
-                        const [templateString] = sectionMatches[0]
-                        let updatedTemplate = generateTemplateOutput(filename, `${templateContent.trim()},`)
-                        let updatedText = sectionContent.replace(templateString, updatedTemplate)
+                        const commentPattern = new RegExp(`\\/\\*\\* TEMPLATE START: (${filename}).*\\/`, 'gms')
+                        const sectionFiles = await glob(path.join(options.sectionsDir, '*.liquid'))
 
-                        const formattedContent = await formatJson(updatedText)
+                        for (const sectionFile of sectionFiles) {
 
-                        if (formattedContent && formattedContent !== "") {
-                            await fs.writeFile(sectionFile, formattedContent, 'utf-8')
+                            const sectionFilename = sectionFile.split('/').slice(-1)[0]
+                            let sectionContent = await fs.readFile(sectionFile, 'utf-8')
+                            if (sectionContent && sectionContent !== '') {
+
+                                const sectionMatches = Array.from(sectionContent.matchAll(commentPattern))
+
+                                if (sectionMatches && sectionMatches[0]) {
+
+                                    const [templateString] = sectionMatches[0]
+                                    let updatedTemplate = generateTemplateOutput(filename, `${templateContent.trim()},`)
+                                    let updatedText = sectionContent.replace(templateString, updatedTemplate)
+
+                                    const formattedContent = await formatJson(updatedText)
+
+                                    if (formattedContent && formattedContent !== "") {
+                                        await fs.writeFile(sectionFile, formattedContent, 'utf-8')
+                                        debug(`Schema from ${filename} injected into ${sectionFilename}`)
+                                    }
+
+                                }
+
+                            }
+
                         }
-
-                    } else {
-
-                        console.log('sectionContent:\n', sectionContent)
-                        throw new Error('Unable to match comment pattern')
 
                     }
 
@@ -156,7 +175,8 @@ export default function shopifySchemaTemplates(options?: PluginOptions): Plugin 
             return {
                 resolve: {
                     alias: {
-                        '@schema': path.resolve()
+                        '@schema': options.schemaDir,
+                        '@sections': options.sectionsDir
                     }
                 }
             }
