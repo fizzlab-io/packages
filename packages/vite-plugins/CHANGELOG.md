@@ -1,5 +1,11 @@
 # @fizzlab.io/vite-plugins
 
+## 1.7.0
+
+### Minor Changes
+
+- removed debugger
+
 ## 1.6.0
 
 ### Minor Changes

@@ -4,7 +4,6 @@ import { Plugin } from 'vite'
 import chokidar from 'chokidar'
 import prettier from 'prettier'
 import glob from 'fast-glob'
-import createDebugger from 'debug'
 
 import { resolveOptions, type PluginOptions } from './options'
 
@@ -12,8 +11,6 @@ export default function shopifySchemaTemplates(config?: PluginOptions): Plugin {
 
     const options = resolveOptions(config)
     const schemaPattern = /{% schema %}(.*){% endschema %}/gms
-
-    const debug = createDebugger('vite-plugin-shopify-schema-templates')
 
     let sectionWatcher: chokidar.FSWatcher
     let schemaWatcher: chokidar.FSWatcher
@@ -62,6 +59,7 @@ export default function shopifySchemaTemplates(config?: PluginOptions): Plugin {
             if (['add', 'change'].includes(event)) {
 
                 const filename = file.split('/').slice(-1)[0]
+
                 const sectionContent = await fs.readFile(file, 'utf-8')
                 if (sectionContent && sectionContent !== '') {
 
@@ -86,7 +84,7 @@ export default function shopifySchemaTemplates(config?: PluginOptions): Plugin {
 
                                 if (formattedContent && formattedContent !== "") {
                                     await fs.writeFile(file, formattedContent, 'utf-8')
-                                    debug(`Schema from ${templateName}.json injected into ${filename}`)
+                                    console.log(`Schema from ${templateName}.json injected into ${filename}`)
                                 }
 
                             }
@@ -116,7 +114,6 @@ export default function shopifySchemaTemplates(config?: PluginOptions): Plugin {
             if (['add', 'change'].includes(event)) {
 
                 const filename = file.split('/').slice(-1)[0]
-                debug(`Schema file ${event}: %s`, filename)
 
                 let templateContent = await fs.readFile(file, 'utf-8')
                 if (templateContent && templateContent !== '') {
@@ -147,7 +144,7 @@ export default function shopifySchemaTemplates(config?: PluginOptions): Plugin {
 
                                     if (formattedContent && formattedContent !== "") {
                                         await fs.writeFile(sectionFile, formattedContent, 'utf-8')
-                                        debug(`Schema from ${filename} injected into ${sectionFilename}`)
+                                        console.log(`Schema from ${filename} injected into ${sectionFilename}`)
                                     }
 
                                 }
