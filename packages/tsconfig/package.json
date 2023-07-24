@@ -1,7 +1,8 @@
 {
     "name": "@fizzlab.io/tsconfig",
     "version": "1.0.1",
-    "author": "Sebastian Inman",
-    "private": true,
-    "files": []
+    "author": "FizzLab, LLC",
+    "files": [
+        "default.json"
+    ]
 }
