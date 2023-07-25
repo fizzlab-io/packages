@@ -1,0 +1,367 @@
+{%- liquid
+
+    render 'vite' with '@/sections/video-banner/index.ts'
+    render 'vite' with '@/sections/video-banner/styles.postcss', preload_stylesheet: true
+
+    comment
+    Generate and concat all section styles
+    endcomment
+
+    assign section_styles = ""
+
+    include "function.css-variable", name: "section-background-color", value: section.settings.background_color
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+    Generate section spacing styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.section_spacing, limit: 1, apply_scalar: true
+    assign section_spacing = unit_values
+    include "function.css-variable", name: "section-spacing", value: section_spacing
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+    Generate section padding styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.padding, limit: 4, apply_scalar: true
+    assign section_padding = unit_values
+    include "function.css-variable", name: "section-padding", value: section_padding
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+    Generate section margin styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.margins, limit: 4, apply_scalar: true
+    assign section_margins = unit_values
+    include "function.css-variable", name: "section-margins", value: section_margins
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+    Generate video opacity styles
+    endcomment
+
+    assign video_opacity = section.settings.video_opacity | default: 100 | append: "%"
+    include "function.css-variable", name: "video-opacity", value: video_opacity
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+    Generate video blur styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.video_blur, limit: 1, apply_scalar: true
+    assign video_blur = unit_values
+    include "function.css-variable", name: "video-blur", value: video_blur
+    assign section_styles = section_styles | append: css_variable
+
+-%}
+
+<video-banner style="{{ section_styles }}" autoplay-on="{{ section.settings.video_autoplay }}">
+    <video-banner-wrapper>
+        <div class="container">
+            <video-banner-inner>
+                {% for block in section.blocks %}
+
+                    {%- liquid
+
+                        assign block_position = block.settings.position | default: "left"
+                        assign block_alignment = block.settings.alignment | default: "left"
+
+                        include "function.unit-values", input: block.settings.width, limit: 1, apply_scalar: true
+                        assign block_width = unit_values
+
+                        include "function.unit-values", input: block.settings.padding, limit: 4, apply_scalar: true
+                        assign block_padding = unit_values
+
+                        assign block_title_color = block.settings.title_color | default: "#000000"
+                        assign block_message_color = block.settings.message_color | default: "#000000"
+                        assign block_background_color = block.settings.background_color | default: "#FFFFFF"
+
+                        assign block_styles = ""
+
+                        include "function.css-variable", name: "block-width", value: block_width
+                        assign block_styles = block_styles | append: css_variable
+
+                        include "function.css-variable", name: "block-padding", value: block_padding
+                        assign block_styles = block_styles | append: css_variable
+
+                        include "function.css-variable", name: "block-title-color", value: block_title_color
+                        assign block_styles = block_styles | append: css_variable
+
+                        include "function.css-variable", name: "block-message-color", value: block_message_color
+                        assign block_styles = block_styles | append: css_variable
+
+                        include "function.css-variable", name: "block-background-color", value: block_background_color
+                        assign block_styles = block_styles | append: css_variable
+
+                    -%}
+
+                    <video-banner-content class="position-{{ block_position }} align-{{ block_alignment }}" style="{{ block_styles }}">
+                        <h2 class="title">Laboris est deserunt dolor ad pariatur.</h2>
+                        <p class="message">Amet nostrud aliquip proident. Qui minim sint ex ex magna adipisicing elit. Ea incididunt non cillum magna cillum. Non magna quis esse. Nisi voluptate elit dolore ut cupidatat reprehenderit nisi aliqua incididunt exercitation mollit nulla anim sit qui. Nulla id ut ipsum. Cillum ut esse cupidatat do est sit sit. Consequat labore ipsum id do pariatur elit.</p>
+                    </video-banner-content>
+
+                {% endfor %}
+            </video-banner-inner>
+        </div>
+    </video-banner-wrapper>
+
+    {%- if section.settings.video != blank -%}
+        <video-banner-media data-parallax="video">
+            {{ section.settings.video | video_tag: loop: section.settings.video_loop }}
+        </video-banner-media>
+    {%- endif -%}
+
+</video-banner>
+
+{% schema %}{
+    "name": "Video Banner",
+    "tag": "section",
+    "settings": [
+        {
+            "type": "paragraph",
+            "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+        },
+        {
+            "type": "select",
+            "id": "layout",
+            "label": "Section layout",
+            "options": [
+                {
+                    "label": "Video Section 01",
+                    "value": "video-section-01"
+                }
+            ]
+        },
+        {
+            "type": "header",
+            "content": "Video Settings"
+        },
+        {
+            "type": "paragraph",
+            "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+        },
+        {
+            "type": "video",
+            "id": "video",
+            "label": "Background video"
+        },
+        {
+            "type": "range",
+            "id": "video_opacity",
+            "label": "Video opacity",
+            "unit": "%",
+            "min": 0,
+            "max": 100,
+            "default": 100
+        },
+        {
+            "type": "text",
+            "id": "video_blur",
+            "label": "Video blur",
+            "info": "Controls the intensity of the blur effect on the video.",
+            "default": "10px"
+        },
+        {
+            "type": "select",
+            "id": "video_autoplay",
+            "label": "Autoplay video",
+            "default": "immediately",
+            "options": [
+                {
+                    "label": "immediately",
+                    "value": "immediately"
+                },
+                {
+                    "label": "when in view",
+                    "value": "in-view"
+                }
+            ]
+        },
+        {
+            "type": "checkbox",
+            "id": "video_loop",
+            "label": "Loop video playback",
+            "default": true
+        },
+        /**
+         * TEMPLATE START: section-defaults.json
+         * Last imported 7/24/2023, 7:27:52 PM
+         * The following settings were auto-imported from a schema template.
+         * Please do not remove this comment or modify the following settings.
+         */
+        {
+            "type": "header",
+            "content": "Section Settings"
+        },
+        {
+            "type": "paragraph",
+            "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+        },
+        {
+            "type": "select",
+            "id": "container",
+            "label": "Section container",
+            "default": "container",
+            "options": [
+                {
+                    "label": "container",
+                    "value": "container"
+                },
+                {
+                    "label": "container fluid",
+                    "value": "container fluid"
+                },
+                {
+                    "label": "container fullscreen",
+                    "value": "container fullscreen"
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "id": "section_spacing",
+            "label": "Section spacing",
+            "info": "Controls the spacing between each element within the section.",
+            "default": "32px"
+        },
+        {
+            "type": "text",
+            "id": "padding",
+            "label": "Section padding",
+            "info": "Controls the padding of the section. [📘 Padding documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/padding#syntax)",
+            "default": "80px 0px 80px 0px"
+        },
+        {
+            "type": "text",
+            "id": "margins",
+            "label": "Section margins",
+            "info": "Controls the margins of the section. [📘 Margin documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/margin#syntax)",
+            "default": "0px 0px 0px 0px"
+        },
+        {
+            "type": "header",
+            "content": "Color Settings"
+        },
+        {
+            "type": "color",
+            "id": "background_color",
+            "label": "Background color",
+            "default": "#FFFFFF"
+        }
+        /**
+         * TEMPLATE END
+         */
+    ],
+    "blocks": [
+        {
+            "name": "Text Block",
+            "type": "text_block",
+            "limit": 1,
+            "settings": [
+                {
+                    "type": "header",
+                    "content": "Block Settings"
+                },
+                {
+                    "type": "paragraph",
+                    "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+                },
+                {
+                    "type": "select",
+                    "id": "position",
+                    "label": "Block position",
+                    "info": "The horizontal alignment of the block within to the section.",
+                    "default": "left",
+                    "options": [
+                        {
+                            "label": "left",
+                            "value": "left"
+                        },
+                        {
+                            "label": "right",
+                            "value": "right"
+                        },
+                        {
+                            "label": "center",
+                            "value": "center"
+                        }
+                    ]
+                },
+                {
+                    "type": "select",
+                    "id": "alignment",
+                    "label": "Block alignment",
+                    "info": "The vertical alignment of the content within the block.",
+                    "default": "left",
+                    "options": [
+                        {
+                            "label": "left",
+                            "value": "left"
+                        },
+                        {
+                            "label": "right",
+                            "value": "right"
+                        },
+                        {
+                            "label": "center",
+                            "value": "center"
+                        }
+                    ]
+                },
+                {
+                    "type": "text",
+                    "id": "width",
+                    "label": "Block width",
+                    "default": "50%"
+                },
+                {
+                    "type": "text",
+                    "id": "padding",
+                    "label": "Block padding",
+                    "info": "Controls the padding of the block. [📘 Padding documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/padding#syntax)",
+                    "default": "32px 32px 32px 32px"
+                },
+                {
+                    "type": "header",
+                    "content": "Color Settings"
+                },
+                {
+                    "type": "paragraph",
+                    "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+                },
+                {
+                    "type": "color",
+                    "id": "title_color",
+                    "label": "Title color",
+                    "default": "#000000"
+                },
+                {
+                    "type": "color",
+                    "id": "message_color",
+                    "label": "Message color",
+                    "default": "#000000"
+                },
+                {
+                    "type": "color",
+                    "id": "background_color",
+                    "label": "Background color",
+                    "default": "#FFFFFF"
+                }
+            ]
+        }
+    ],
+    "presets": [
+        {
+            "name": "Video Banner",
+            "settings": {},
+            "blocks": []
+        }
+    ],
+    "enabled_on": {
+        "templates": ["*"]
+    }
+}
+{% endschema %}

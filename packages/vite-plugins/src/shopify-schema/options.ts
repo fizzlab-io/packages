@@ -3,8 +3,9 @@ import path from 'node:path'
 export type PluginOptions = {
     schemaDir?: string
     sectionsDir?: string
-    regexPattern?: RegExp
-    jsonTabWidth?: number
+    jsonTabWidth?: number,
+    autoFormatJSON?: boolean,
+    logLevels?: ('info' | 'warn' | 'error')[]
 }
 
 export type ResolvedPluginOptions = Required<PluginOptions>
@@ -21,14 +22,19 @@ export const resolveOptions = (options?: PluginOptions): ResolvedPluginOptions =
         ? path.normalize(options.sectionsDir)
         : path.resolve(process.cwd(), './sections'),
 
-    regexPattern:
-        typeof options?.regexPattern !== 'undefined'
-        ? options.regexPattern
-        : /{\"schema\": \"(\S+)\"}/g,
-
     jsonTabWidth:
         typeof options?.jsonTabWidth !== 'undefined'
         ? options.jsonTabWidth
-        : 4
+        : 4,
+
+    autoFormatJSON:
+        typeof options?.autoFormatJSON !== 'undefined'
+        ? options.autoFormatJSON
+        : true,
+
+    logLevels:
+        typeof options?.logLevels !== 'undefined'
+        ? options.logLevels
+        : ['info', 'warn', 'error']
 
 })

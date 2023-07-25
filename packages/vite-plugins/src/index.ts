@@ -1,6 +1,6 @@
-import shopifySchemaTemplates from './shopify-schema-templates'
-export { shopifySchemaTemplates }
+import shopifySchema from './shopify-schema'
+export { shopifySchema }
 
 export default {
-    shopifySchemaTemplates
+    shopifySchema
 }
