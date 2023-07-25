@@ -1,0 +1,103 @@
+<div>
+    <h1>Test Section</h1>
+</div>
+
+{% schema %}{
+    "settings": [
+        /**
+         * TEMPLATE START: background-settings.json
+         * Last imported 7/25/2023, 2:24:27 AM
+         * The following settings were auto-imported from a schema template.
+         * Please do not remove this comment or modify the following settings.
+         */
+        {
+            "type": "range",
+            "id": "background_opacity",
+            "label": "Background Opacity",
+            "unit": "%",
+            "min": 0,
+            "max": 100,
+            "default": 100
+        },
+        {
+            "type": "text",
+            "id": "background_blur",
+            "label": "Background blur",
+            "info": "Controls the intensity of the blur effect on the video.",
+            "default": "10px"
+        },
+        /**
+         * TEMPLATE END
+         */
+
+        /**
+         * TEMPLATE START: section-defaults.json
+         * Last imported 7/25/2023, 2:24:27 AM
+         * The following settings were auto-imported from a schema template.
+         * Please do not remove this comment or modify the following settings.
+         */
+        {
+            "type": "header",
+            "content": "Section Settings"
+        },
+        {
+            "type": "paragraph",
+            "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+        },
+        {
+            "type": "select",
+            "id": "container",
+            "label": "Section container",
+            "default": "container",
+            "options": [
+                {
+                    "label": "container",
+                    "value": "container"
+                },
+                {
+                    "label": "container fluid",
+                    "value": "container fluid"
+                },
+                {
+                    "label": "container fullscreen",
+                    "value": "container fullscreen"
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "id": "section_spacing",
+            "label": "Section spacing",
+            "info": "Controls the spacing between each element within the section.",
+            "default": "32px 32px 32pz 32px"
+        },
+        {
+            "type": "text",
+            "id": "padding",
+            "label": "Section padding",
+            "info": "Controls the padding of the section. [📘 Padding documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/padding#syntax)",
+            "default": "80px 0px 80px 0px"
+        },
+        {
+            "type": "text",
+            "id": "margins",
+            "label": "Section margins",
+            "info": "Controls the margins of the section. [📘 Margin documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/margin#syntax)",
+            "default": "0px 0px 0px 0px"
+        },
+        {
+            "type": "header",
+            "content": "Color Settings"
+        },
+        {
+            "type": "color",
+            "id": "background_color",
+            "label": "Background color",
+            "default": "#FFFFFF"
+        }
+        /**
+         * TEMPLATE END
+         */
+    ]
+}
+{% endschema %}

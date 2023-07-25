@@ -1,5 +1,11 @@
 # @fizzlab.io/vite-plugins
 
+## 1.2.0
+
+### Minor Changes
+
+- final refactor. fixed issues with multiple templates in one file
+
 ## 1.1.0
 
 ### Minor Changes

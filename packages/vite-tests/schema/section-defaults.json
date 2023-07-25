@@ -1,0 +1,61 @@
+[
+    {
+        "type": "header",
+        "content": "Section Settings"
+    },
+    {
+        "type": "paragraph",
+        "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+    },
+    {
+        "type": "select",
+        "id": "container",
+        "label": "Section container",
+        "default": "container",
+        "options": [
+            {
+                "label": "container",
+                "value": "container"
+            },
+            {
+                "label": "container fluid",
+                "value": "container fluid"
+            },
+            {
+                "label": "container fullscreen",
+                "value": "container fullscreen"
+            }
+        ]
+    },
+    {
+        "type": "text",
+        "id": "section_spacing",
+        "label": "Section spacing",
+        "info": "Controls the spacing between each element within the section.",
+        "default": "32px 32px 32pz 32px"
+    },
+    {
+        "type": "text",
+        "id": "padding",
+        "label": "Section padding",
+        "info": "Controls the padding of the section. [📘 Padding documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/padding#syntax)",
+        "default": "80px 0px 80px 0px"
+    },
+    {
+        "type": "text",
+        "id": "margins",
+        "label": "Section margins",
+        "info": "Controls the margins of the section. [📘 Margin documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/margin#syntax)",
+        "default": "0px 0px 0px 0px"
+    },
+    {
+        "type": "header",
+        "content": "Color Settings"
+    },
+    {
+        "type": "color",
+        "id": "background_color",
+        "label": "Background color",
+        "default": "#FFFFFF"
+    }
+]

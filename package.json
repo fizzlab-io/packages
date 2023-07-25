@@ -9,14 +9,14 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
+    "build": "turbo run build --filter=vite-plugin-*",
+    "dev": "turbo run dev --filter=vite-plugin-* --parallel",
     "lint": "turbo run lint",
     "change:help": "changeset --help",
     "change:add": "changeset add",
     "change:version": "changeset version",
     "change:publish": "pnpm build && changeset publish",
-    "test": "turbo run test --no-cache"
+    "test": "turbo run test --filter=vite-plugin-* --no-cache"
   },
   "devDependencies": {
     "@changesets/cli": "2.26.2",
@@ -29,6 +29,7 @@
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "6.1.1",
+    "json5": "2.2.3",
     "prettier": "3.0.0",
     "tsup": "7.1.0",
     "turbo": "1.10.9",

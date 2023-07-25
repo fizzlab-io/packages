@@ -1,0 +1,34 @@
+[
+    {
+        "type": "select",
+        "id": "video_autoplay",
+        "label": "Video autoplay",
+        "default": "immediately",
+        "options": [
+            {
+                "label": "immediately",
+                "value": "immediately"
+            },
+            {
+                "label": "when in view",
+                "value": "in-view"
+            }
+        ]
+    },
+    {
+        "type": "select",
+        "id": "video_loop",
+        "label": "Loop video",
+        "default": "true",
+        "options": [
+            {
+                "label": "true",
+                "value": "true"
+            },
+            {
+                "label": "false",
+                "value": "false"
+            }
+        ]
+    }
+]

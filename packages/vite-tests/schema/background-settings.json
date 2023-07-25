@@ -1,0 +1,18 @@
+[
+    {
+        "type": "range",
+        "id": "background_opacity",
+        "label": "Background Opacity",
+        "unit": "%",
+        "min": 0,
+        "max": 100,
+        "default": 100
+    },
+    {
+        "type": "text",
+        "id": "background_blur",
+        "label": "Background blur",
+        "info": "Controls the intensity of the blur effect on the video.",
+        "default": "10px"
+    }
+]
