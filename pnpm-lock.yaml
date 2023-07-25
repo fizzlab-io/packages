@@ -65,20 +65,11 @@ importers:
         version: 0.0.8(vite@4.4.6)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0
+        version: 0.33.0(@vitest/ui@0.33.0)
 
   packages/tsconfig: {}
 
-  packages/vite-plugin-tests:
-    devDependencies:
-      '@fizzlab.io/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
-      '@fizzlab.io/vite-plugins':
-        specifier: workspace:*
-        version: link:../vite-plugins
-
-  packages/vite-plugins:
+  packages/vite-plugin-shopify-schema:
     dependencies:
       fast-glob:
         specifier: 3.3.1
@@ -96,6 +87,15 @@ importers:
       vite:
         specifier: 4.4.6
         version: 4.4.6(@types/node@20.4.4)
+
+  packages/vite-plugin-tests:
+    devDependencies:
+      '@fizzlab.io/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@fizzlab.io/vite-plugin-shopify-schema':
+        specifier: workspace:*
+        version: link:../vite-plugin-shopify-schema
 
 packages:
 
@@ -3758,71 +3758,6 @@ packages:
       rollup: 3.26.3
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
-
-  /vitest@0.33.0:
-    resolution: {integrity: sha512-1CxaugJ50xskkQ0e969R/hW47za4YXDUfWJDxip1hwbnhUjYolpfUn2AMOulqG/Dtd9WYAtkHmM/m3yKVrEejQ==}
-    engines: {node: '>=v14.18.0'}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@vitest/browser': '*'
-      '@vitest/ui': '*'
-      happy-dom: '*'
-      jsdom: '*'
-      playwright: '*'
-      safaridriver: '*'
-      webdriverio: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-      playwright:
-        optional: true
-      safaridriver:
-        optional: true
-      webdriverio:
-        optional: true
-    dependencies:
-      '@types/chai': 4.3.5
-      '@types/chai-subset': 1.3.3
-      '@types/node': 20.4.4
-      '@vitest/expect': 0.33.0
-      '@vitest/runner': 0.33.0
-      '@vitest/snapshot': 0.33.0
-      '@vitest/spy': 0.33.0
-      '@vitest/utils': 0.33.0
-      acorn: 8.10.0
-      acorn-walk: 8.2.0
-      cac: 6.7.14
-      chai: 4.3.7
-      debug: 4.3.4
-      local-pkg: 0.4.3
-      magic-string: 0.30.1
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      std-env: 3.3.3
-      strip-literal: 1.0.1
-      tinybench: 2.5.0
-      tinypool: 0.6.0
-      vite: 4.4.6(@types/node@20.4.4)
-      vite-node: 0.33.0(@types/node@20.4.4)
-      why-is-node-running: 2.2.2
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
     dev: true
 
   /vitest@0.33.0(@vitest/ui@0.33.0):

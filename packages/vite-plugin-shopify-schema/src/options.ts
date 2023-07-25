@@ -4,8 +4,7 @@ export type PluginOptions = {
     schemaDir?: string
     sectionsDir?: string
     jsonTabWidth?: number,
-    autoFormatJSON?: boolean,
-    logLevels?: ('info' | 'warn' | 'error')[]
+    logLevel?: 'info' | 'warn' | 'error'
 }
 
 export type ResolvedPluginOptions = Required<PluginOptions>
@@ -27,14 +26,9 @@ export const resolveOptions = (options?: PluginOptions): ResolvedPluginOptions =
         ? options.jsonTabWidth
         : 4,
 
-    autoFormatJSON:
-        typeof options?.autoFormatJSON !== 'undefined'
-        ? options.autoFormatJSON
-        : true,
-
-    logLevels:
-        typeof options?.logLevels !== 'undefined'
-        ? options.logLevels
-        : ['info', 'warn', 'error']
+    logLevel:
+        typeof options?.logLevel !== 'undefined'
+        ? options.logLevel
+        : 'warn'
 
 })

@@ -1,5 +1,6 @@
 {
-  "name": "fizzlab",
+  "name": "fizzlab.io",
+  "author": "FizzLab, LLC",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,14 +12,12 @@
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
+    "change:help": "changeset --help",
     "change:add": "changeset add",
     "change:version": "changeset version",
     "change:publish": "pnpm build && changeset publish",
     "test": "turbo run test --no-cache"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@changesets/cli": "2.26.2",
     "@types/debug": "4.1.8",

@@ -1,17 +1,21 @@
 {
-    "name": "@fizzlab.io/vite-plugins",
-    "version": "1.8.0",
+    "name": "@fizzlab.io/vite-plugin-shopify-schema",
     "author": "FizzLab, LLC",
+    "version": "1.1.0",
     "main": "dist/index.js",
-    "module": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
+    "repository": {
+        "url": "fizzlab-io/packages",
+        "directory": "packages/vite-plugin-shopify-schema"
+    },
     "files": [
         "dist"
     ],
     "exports": {
         ".": {
-            "require": "./dist/index.cjs",
-            "import": "./dist/index.js",
+            "require": "./dist/index.js",
+            "import": "./dist/index.mjs",
             "types": "./dist/index.d.ts"
         }
     },

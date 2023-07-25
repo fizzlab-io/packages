@@ -1,5 +1,11 @@
 # @fizzlab.io/vite-plugins
 
+## 1.1.0
+
+### Minor Changes
+
+- cleanup
+
 ## 1.8.0
 
 ### Minor Changes

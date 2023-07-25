@@ -1,24 +1,23 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { Plugin } from 'vite'
 import prettier from 'prettier'
 import glob from 'fast-glob'
 import chalk from 'chalk'
+
+import { Plugin } from 'vite'
 import { resolveOptions, type PluginOptions } from './options'
 
-export default function (config?: PluginOptions): Plugin {
+export default function shopifySchema(config?: PluginOptions): Plugin {
 
     let throttled = false
 
     const options = resolveOptions(config)
 
-    const maxWriteAttempts = 3
-
     const declarationPattern = /\{\s?\"schema\":\s?\"(\S+)\"\s?\}|\{\s+\"schema\":\s?\"(\S+)\"\s+\}/gms
     const schemaBlockPattern = /{% schema %}(.*){% endschema %}/gms
 
     function info(message: string, ...args: any[]) {
-        if (options.logLevels.includes('info')) {
+        if (['info', 'warn', 'error'].includes(options.logLevel)) {
             console.log('\n', chalk.bgBlue.black.bold(' INFO '), chalk.blue(message), ...args)
         }
     }
@@ -28,13 +27,13 @@ export default function (config?: PluginOptions): Plugin {
     }
 
     function warn(message: string, ...args: any[]) {
-        if (options.logLevels.includes('warn')) {
+        if (['warn', 'error'].includes(options.logLevel)) {
             console.log('\n', chalk.bgYellow.black.bold(' WARN '), chalk.yellow(message), ...args)
         }
     }
 
     function fail(message: string, ...args: any[]) {
-        if (options.logLevels.includes('error')) {
+        if (['error'].includes(options.logLevel)) {
             console.log('\n', chalk.bgRed.black.bold(' FAIL '), chalk.red(message), ...args)
         }
     }
@@ -78,8 +77,6 @@ export default function (config?: PluginOptions): Plugin {
     }
 
     async function formatSectionSchemaContent(sectionFileContents: string) {
-
-        if (!options.autoFormatJSON) return sectionFileContents
 
         /** Search section file contents for the schema block. */
         const schemaBlockMatches = Array.from(sectionFileContents.matchAll(schemaBlockPattern))
