@@ -17,6 +17,10 @@ export default function shopifySchema(config?: PluginOptions): Plugin {
     const declarationPattern = /\{\s?\"\@\":\s?\"(\S+)\"\s?\},?|\{\s+\"schema\":\s?\"(\S+)\"\s+\},?/gms
     const schemaBlockPattern = /{% schema %}(.*){% endschema %}/gms
 
+    function timestamp() {
+        return new Date().toLocaleTimeString()
+    }
+
     function info(message: string, ...args: any[]) {
         if (['info', 'warn', 'error'].includes(options.logLevel)) {
             console.log('\n', chalk.bgBlue.black.bold(' INFO '), chalk.blue(message), ...args)
@@ -24,12 +28,7 @@ export default function shopifySchema(config?: PluginOptions): Plugin {
     }
 
     function pass(message: string, ...args: any[]) {
-        console.log(
-            '\n',
-            chalk.bgGreen.black.bold(' PASS '),
-            chalk.green(message),
-            `\n        ${chalk.gray('Timestamp:')} ${new Date().toLocaleTimeString()}`,
-            ...args)
+        console.log(chalk.gray(timestamp()), chalk.cyan('[vite]'), chalk.green(message), ...args)
     }
 
     function warn(message: string, ...args: any[]) {
@@ -235,6 +234,7 @@ export default function shopifySchema(config?: PluginOptions): Plugin {
 
         /** The name of the section file with the extension. */
         const sectionFilename = path.basename(file)
+        const sectionDirName = path.dirname(file).split(path.sep).pop()
 
         // /** Get file contents of the section file. */
         let sectionFileContents = await fs.readFile(file, 'utf-8')
@@ -248,10 +248,7 @@ export default function shopifySchema(config?: PluginOptions): Plugin {
         const formattedFileContents = await formatSectionSchemaContent(sectionFileContents)
         await writeFileContent(file, formattedFileContents)
 
-        pass(
-            `Section schema templates injected`,
-            `\n        ${chalk.gray('Section file:')} ${chalk.white(sectionFilename)}`
-        )
+        pass('schema injected', chalk.gray(`${sectionDirName}/${sectionFilename}`))
 
     }
 
