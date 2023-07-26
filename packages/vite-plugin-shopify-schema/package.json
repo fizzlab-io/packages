@@ -1,7 +1,7 @@
 {
     "name": "@fizzlab.io/vite-plugin-shopify-schema",
     "author": "FizzLab, LLC",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "main": "dist/index.js",
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
@@ -32,6 +32,7 @@
     },
     "devDependencies": {
         "@fizzlab.io/tsconfig": "workspace:*",
+        "@fizzlab.io/vite-plugin": "workspace:*",
         "@vitest/ui": "0.33.0",
         "prettier": "3.0.0",
         "vite": "4.4.6"

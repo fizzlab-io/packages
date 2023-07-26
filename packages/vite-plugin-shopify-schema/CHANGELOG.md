@@ -1,5 +1,11 @@
 # @fizzlab.io/vite-plugins
 
+## 1.4.0
+
+### Minor Changes
+
+- e197069: updated vite plugin base
+
 ## 1.3.0
 
 ### Minor Changes
