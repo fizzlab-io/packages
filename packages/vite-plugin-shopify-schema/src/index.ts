@@ -1,280 +1,211 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import prettier from 'prettier'
-import glob from 'fast-glob'
-import chalk from 'chalk'
-import json5 from 'json5'
+import VitePlugin, { fs, path, glob, prettier } from '@fizzlab.io/vite-plugin'
 
-import { Plugin } from 'vite'
-import { resolveOptions, type PluginOptions } from './options'
+type PluginOptions = {
+    schemaDir: string
+    sectionsDir: string
+    jsonTabWidth: number
+}
 
-export default function shopifySchema(config?: PluginOptions): Plugin {
+export default new VitePlugin<PluginOptions>({
+    name: 'vite-plugin-shopify-schema',
+    enforce: 'post',
+    options: {
+        schemaDir: './schema',
+        sectionsDir: './sections',
+        jsonTabWidth: 4
+    },
+    register(plugin) {
 
-    let throttled = false
+        const schemaDir = path.resolve(plugin.rootDir, path.normalize(plugin.options.schemaDir))
+        const sectionsDir = path.resolve(plugin.rootDir, path.normalize(plugin.options.sectionsDir))
 
-    const options = resolveOptions(config)
+        const declarationPattern = /\{\s?\"\@\":\s?\"(\S+)\"\s?\},?|\{\s+\"schema\":\s?\"(\S+)\"\s+\},?/gms
+        const schemaBlockPattern = /{% schema %}(.*){% endschema %}/gms
 
-    const declarationPattern = /\{\s?\"\@\":\s?\"(\S+)\"\s?\},?|\{\s+\"schema\":\s?\"(\S+)\"\s+\},?/gms
-    const schemaBlockPattern = /{% schema %}(.*){% endschema %}/gms
-
-    function timestamp() {
-        return new Date().toLocaleTimeString()
-    }
-
-    function info(message: string, ...args: any[]) {
-        if (['info', 'warn', 'error'].includes(options.logLevel)) {
-            console.log('\n', chalk.bgBlue.black.bold(' INFO '), chalk.blue(message), ...args)
-        }
-    }
-
-    function pass(message: string, ...args: any[]) {
-        console.log(chalk.gray(timestamp()), chalk.cyan('[vite]'), chalk.green(message), ...args)
-    }
-
-    function warn(message: string, ...args: any[]) {
-        if (['warn', 'error'].includes(options.logLevel)) {
-            console.log('\n', chalk.bgYellow.black.bold(' WARN '), chalk.yellow(message), ...args)
-        }
-    }
-
-    function fail(message: string, ...args: any[]) {
-        if (['error'].includes(options.logLevel)) {
-            console.log('\n', chalk.bgRed.black.bold(' FAIL '), chalk.red(message), ...args)
-        }
-    }
-
-    async function sleep(delay: number) {
-        await new Promise(resolve => setTimeout(resolve, delay))
-    }
-
-    function commentPattern(filename?: string) {
-        return filename
-            ? new RegExp(`\/\*\*\s+\* TEMPLATE START: (${filename}).*?\/\*\*\s+\* TEMPLATE END\s+\*\/`, 'gms')
-            : /\/\*\*\s+\* TEMPLATE START: (\S+).*?\/\*\*\s+\* TEMPLATE END\s+\*\//gms
-    }
-
-    function filenameWithExtension(filename: string, extension: string) {
-        extension = extension.startsWith('.') ? extension : `.${extension}`
-        return filename.endsWith(extension) ? filename : `${filename}${extension}`
-    }
-
-    async function formatJson(jsonContent: string, trailingComma: 'none' | 'es5' | 'all' | undefined = 'none') {
-
-        try {
-
-            const formattedJsonContent = await prettier.format(jsonContent, {
-                tabWidth: options.jsonTabWidth,
-                bracketSameLine: false,
-                trailingComma: trailingComma,
-                singleQuote: false,
-                parser: 'json'
-            })
-
-            return formattedJsonContent
-
-        } catch(err) {
-
-            warn('Unable to format JSON\n', err)
-            return jsonContent
-
+        function commentPattern(filename?: string) {
+            return filename
+                ? new RegExp(`\/\*\*\s+\* TEMPLATE START: (${filename}).*?\/\*\*\s+\* TEMPLATE END\s+\*\/`, 'gms')
+                : /\/\*\*\s+\* TEMPLATE START: (\S+).*?\/\*\*\s+\* TEMPLATE END\s+\*\//gms
         }
 
-    }
-
-    async function formatSectionSchemaContent(sectionFileContents: string) {
-
-        /** Search section file contents for the schema block. */
-        const schemaBlockMatches = Array.from(sectionFileContents.matchAll(schemaBlockPattern))
-
-        /** No schema block found, skip this step. */
-        if (!schemaBlockMatches.length) return sectionFileContents
-
-        /** Extract the schema block and block JSON content. */
-        const [blockMatch, blockJson] = schemaBlockMatches[0]
-
-        /** Format and prettify the block JSON content */
-        const formattedBlockJson = await formatJson(blockJson)
-
-        /** Replce the unformatted block content. */
-        return sectionFileContents.replace(blockJson, formattedBlockJson)
-
-    }
-
-    async function writeFileContent(file: string, fileContent: string) {
-
-        const filename = path.basename(file)
-
-        try {
-
-            await fs.writeFile(file, fileContent, { encoding: 'utf-8', flag: 'w' })
-
-        } catch(err) {
-
-            fail(
-                'Unable to write to file',
-                `\n        ${chalk.gray('Reason:')} ${err}`,
-                `\n        ${chalk.gray('Schema:')} ${filename}`
-            )
-
+        function filenameWithExtension(filename: string, extension: string) {
+            extension = extension.startsWith('.') ? extension : `.${extension}`
+            return filename.endsWith(extension) ? filename : `${filename}${extension}`
         }
 
-    }
+        async function formatJson(jsonContent: string, trailingComma: 'none' | 'es5' | 'all' | undefined = 'none') {
 
-    async function generateSectionSchemaContent(fileContents: string, matchResult: RegExpMatchArray) {
+            try {
 
-        /** Extract the declaration and schema filename. */
-        let [fullMatch, schemaFilename] = matchResult
+                const formattedJsonContent = await prettier.format(jsonContent, {
+                    tabWidth: plugin.options.jsonTabWidth,
+                    bracketSameLine: false,
+                    trailingComma: trailingComma,
+                    singleQuote: false,
+                    parser: 'json'
+                })
 
-        /** Format the filename to include the extension. */
-        schemaFilename = filenameWithExtension(schemaFilename, 'json')
+                return formattedJsonContent
 
-        /** Get the full path to the schema file. */
-        const schemaFilePath = path.join(options.schemaDir, schemaFilename)
+            } catch(err) {
 
-        try {
-
-            /** Check that the schema file exists. */
-            await fs.access(schemaFilePath)
-
-            /** Get the file contents of the schema template file. */
-            const schemaFileContents = await fs.readFile(schemaFilePath, 'utf-8')
-
-            /** The schema template file is empty or does not exist. */
-            if (!schemaFileContents || schemaFileContents === '') {
-
-                warn(
-                    `Unable to parse schema template`,
-                    `\n       ${chalk.gray('Reason:')} Schema template file is empty`,
-                    `\n       ${chalk.gray('Schema:')} ${schemaFilename}`
-                )
-
-                return fileContents
+                plugin.log('warn', 'wnable to format output')
+                return jsonContent
 
             }
 
-            /** The schema template file is not wrapped in an array. */
-            if (!schemaFileContents.startsWith('[') && !schemaFileContents.endsWith(']')) {
+        }
 
-                warn(
-                    `Unable to parse schema template`,
-                    `\n       ${chalk.gray('Reason:')} Schema template file must be an array`,
-                    `\n       ${chalk.gray('Schema:')} ${schemaFilename}`
-                )
+        async function formatSectionSchemaContent(sectionFileContents: string) {
 
-                return fileContents
+            /** Search section file contents for the schema block. */
+            const schemaBlockMatches = Array.from(sectionFileContents.matchAll(schemaBlockPattern))
+
+            /** No schema block found, skip this step. */
+            if (!schemaBlockMatches.length) return sectionFileContents
+
+            /** Extract the schema block and block JSON content. */
+            const [_, blockJson] = schemaBlockMatches[0]
+
+            /** Format and prettify the block JSON content */
+            const formattedBlockJson = await formatJson(blockJson)
+
+            /** Replce the unformatted block content. */
+            return sectionFileContents.replace(blockJson, formattedBlockJson)
+
+        }
+
+        async function writeFileContent(file: string, fileContent: string) {
+
+            const filename = path.basename(file)
+
+            try {
+
+                await fs.writeFile(file, fileContent, { encoding: 'utf-8', flag: 'w' })
+
+            } catch(err) {
+
+                plugin.log('error', 'unable to write to file', filename)
 
             }
 
-            /** Extract and format the JSON from the schema file. */
-            const schemaFileJson = schemaFileContents.trim().slice(1, -1).trim()
+        }
 
-            /** Get the current date and time. */
-            const timestamp = new Date().toLocaleString()
+        async function generateSectionSchemaContent(fileContents: string, matchResult: RegExpMatchArray) {
 
-            const commentedJson = `\n/**
-                * TEMPLATE START: ${schemaFilename}
-                * Last imported ${timestamp}
-                * The following settings were auto-imported from a schema template.
-                * Please do not remove this comment or modify the following settings.
-                */
-            ${schemaFileJson},
-            /**
-             * TEMPLATE END
-             */\n`
+            /** Extract the declaration and schema filename. */
+            let [fullMatch, schemaFilename] = matchResult
 
-            /** Replace the match with the schema file JSON contents. */
-            return fileContents.replace(fullMatch, commentedJson)
+            /** Format the filename to include the extension. */
+            schemaFilename = filenameWithExtension(schemaFilename, 'json')
 
-        } catch(err) {
+            /** Get the full path to the schema file. */
+            const schemaFilePath = path.join(schemaDir, schemaFilename)
 
-            fail(
-                'Unable to access schema template',
-                `\n        ${chalk.gray('Reason:')} Schema template file does not exist`,
-                `\n        ${chalk.gray('Schema:')} ${schemaFilename}`
-            )
+            try {
 
-            return fileContents
+                /** Check that the schema file exists. */
+                await fs.access(schemaFilePath)
+
+                /** Get the file contents of the schema template file. */
+                const schemaFileContents = await fs.readFile(schemaFilePath, 'utf-8')
+
+                /** The schema template file is empty or does not exist. */
+                if (!schemaFileContents || schemaFileContents === '') {
+                    plugin.log('error', 'schema template is empty', schemaFilename)
+                    return fileContents
+                }
+
+                /** The schema template file is not wrapped in an array. */
+                if (!schemaFileContents.startsWith('[') && !schemaFileContents.endsWith(']')) {
+                    plugin.log('error', 'schema template is not an array', schemaFilename)
+                    return fileContents
+                }
+
+                /** Extract and format the JSON from the schema file. */
+                const schemaFileJson = schemaFileContents.trim().slice(1, -1).trim()
+
+                /** Get the current date and time. */
+                const timestamp = new Date().toLocaleString()
+
+                const commentedJson = `\n/**
+                    * TEMPLATE START: ${schemaFilename}
+                    * Last imported ${timestamp}
+                    * The following settings were auto-imported from a schema template.
+                    * Please do not remove this comment or modify the following settings.
+                    */
+                ${schemaFileJson},
+                /**
+                 * TEMPLATE END
+                 */\n`
+
+                /** Replace the match with the schema file JSON contents. */
+                return fileContents.replace(fullMatch, commentedJson)
+
+            } catch(err) {
+                plugin.log('error', 'schema template does not exist', schemaFilename)
+                return fileContents
+            }
 
         }
 
-    }
+        async function injectSchemaTemplates(sectionFileContents: string) {
 
-    async function injectSchemaTemplates(sectionFileContents: string) {
+            /** Search file for instances of schema template declarations. */
+            const declarationMatches = Array.from(sectionFileContents.matchAll(declarationPattern))
 
-        /** Search file for instances of schema template declarations. */
-        const declarationMatches = Array.from(sectionFileContents.matchAll(declarationPattern))
+            /** Loop through each schema template declaration. */
+            for (const declarationMatch of declarationMatches) {
+                sectionFileContents = await generateSectionSchemaContent(sectionFileContents, declarationMatch)
+            }
 
-        /** Loop through each schema template declaration. */
-        for (const declarationMatch of declarationMatches) {
-            sectionFileContents = await generateSectionSchemaContent(sectionFileContents, declarationMatch)
+            return sectionFileContents
+
         }
 
-        return sectionFileContents
+        async function updateSchemaTemplates(sectionFileContents: string) {
 
-    }
+            /** Search file for instances of schema comments. */
+            const commentMatches = Array.from(sectionFileContents.matchAll(commentPattern()))
 
-    async function updateSchemaTemplates(sectionFileContents: string) {
+            /** Loop throw each schema comment. */
+            for (const commentMatch of commentMatches) {
+                sectionFileContents = await generateSectionSchemaContent(sectionFileContents, commentMatch)
+            }
 
-        /** Search file for instances of schema comments. */
-        const commentMatches = Array.from(sectionFileContents.matchAll(commentPattern()))
+            return sectionFileContents
 
-        /** Loop throw each schema comment. */
-        for (const commentMatch of commentMatches) {
-            sectionFileContents = await generateSectionSchemaContent(sectionFileContents, commentMatch)
         }
 
-        return sectionFileContents
+        async function transformSectionFile(file: string) {
 
-    }
+            /** Only transform ".liquid" files in the "sectionsDir" directory. */
+            if (!file.includes(sectionsDir) || !file.endsWith('.liquid')) return
 
-    async function transformSectionFile(file: string) {
+            /** The name of the section file with the extension. */
+            const sectionFilename = path.basename(file)
+            const sectionDirName = path.dirname(file).split(path.sep).pop()
 
-        /** Only transform ".liquid" files in the "sectionsDir" directory. */
-        if (!file.includes(options.sectionsDir) || !file.endsWith('.liquid')) return
+            // /** Get file contents of the section file. */
+            let sectionFileContents = await fs.readFile(file, 'utf-8')
 
-        /** The name of the section file with the extension. */
-        const sectionFilename = path.basename(file)
-        const sectionDirName = path.dirname(file).split(path.sep).pop()
+            /** Inject schema template instances. */
+            sectionFileContents = await injectSchemaTemplates(sectionFileContents)
 
-        // /** Get file contents of the section file. */
-        let sectionFileContents = await fs.readFile(file, 'utf-8')
+            /** Update schema template instances. */
+            sectionFileContents = await updateSchemaTemplates(sectionFileContents)
 
-        /** Inject schema template instances. */
-        sectionFileContents = await injectSchemaTemplates(sectionFileContents)
+            const formattedFileContents = await formatSectionSchemaContent(sectionFileContents)
+            await writeFileContent(file, formattedFileContents)
 
-        /** Update schema template instances. */
-        sectionFileContents = await updateSchemaTemplates(sectionFileContents)
+            plugin.log('success', 'schema injected', sectionFilename)
 
-        const formattedFileContents = await formatSectionSchemaContent(sectionFileContents)
-        await writeFileContent(file, formattedFileContents)
-
-        pass('schema injected', chalk.gray(`${sectionDirName}/${sectionFilename}`))
-
-    }
-
-    async function transformSchemaFile(file: string, sectionFiles: string[]) {
-
-        /** Only transform ".json" files in the "schemaDir" directory. */
-        if (!file.includes(options.schemaDir) || !file.endsWith('.json')) return
-
-        for (const sectionFile of sectionFiles) {
-            await transformSectionFile(sectionFile)
         }
 
-    }
+        async function transformSchemaFile(file: string, sectionFiles: string[]) {
 
-    async function execute(file?: string) {
-
-        throttled = true
-
-        const sectionFiles = await glob(path.join(options.sectionsDir, '*.liquid'))
-
-        if (typeof file !== 'undefined') {
-
-            await transformSectionFile(file)
-            await transformSchemaFile(file, sectionFiles)
-
-        } else {
+            /** Only transform ".json" files in the "schemaDir" directory. */
+            if (!file.includes(schemaDir) || !file.endsWith('.json')) return
 
             for (const sectionFile of sectionFiles) {
                 await transformSectionFile(sectionFile)
@@ -282,36 +213,53 @@ export default function shopifySchema(config?: PluginOptions): Plugin {
 
         }
 
-        await sleep(500)
-        throttled = false
+        async function execute(file?: string) {
 
-    }
+            plugin.throttled = true
 
-    return {
+            const sectionFiles = await glob(path.join(sectionsDir, '*.liquid'))
 
-        name: 'vite-plugin-shopify-schema',
-        enforce: 'post',
+            if (typeof file !== 'undefined') {
 
-        config() {
-            return {
-                resolve: {
-                    alias: {
-                        '@schema': options.schemaDir,
-                        '@sections': options.sectionsDir
+                await transformSectionFile(file)
+                await transformSchemaFile(file, sectionFiles)
+
+            } else {
+
+                for (const sectionFile of sectionFiles) {
+                    await transformSectionFile(sectionFile)
+                }
+
+            }
+
+            await plugin.sleep(500)
+            plugin.throttled = false
+
+        }
+
+        return {
+
+            config() {
+                return {
+                    resolve: {
+                        alias: {
+                            '@schema': schemaDir,
+                            '@sections': sectionsDir
+                        }
                     }
                 }
+            },
+
+            async buildStart() {
+                execute()
+            },
+
+            async handleHotUpdate({ file }) {
+                if (plugin.throttled) return
+                execute(file)
             }
-        },
 
-        async buildStart() {
-            execute()
-        },
-
-        async handleHotUpdate({ file }) {
-            if (throttled) return
-            execute(file)
         }
 
     }
-
-}
+}).export

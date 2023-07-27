@@ -1,0 +1,87 @@
+AssetPreload:
+  enabled: false
+  severity: suggestion
+AssetSizeCSS:
+  enabled: false
+  threshold_in_bytes: 100000
+AssetSizeJavaScript:
+  enabled: false
+  threshold_in_bytes: 10000
+AssetUrlFilters:
+  enabled: false
+ContentForHeaderModification:
+  enabled: false
+ConvertIncludeToRender:
+  enabled: false
+DefaultLocale:
+  enabled: true
+DeprecatedFilter:
+  enabled: true
+DeprecatedGlobalAppBlockType:
+  enabled: true
+HtmlParsingError:
+  enabled: true
+ImgLazyLoading:
+  enabled: true
+ImgWidthAndHeight:
+  enabled: true
+LiquidTag:
+  enabled: true
+  min_consecutive_statements: 5
+MatchingSchemaTranslations:
+  enabled: true
+MatchingTranslations:
+  enabled: true
+MissingRequiredTemplateFiles:
+  enabled: true
+MissingTemplate:
+  enabled: true
+NestedSnippet:
+  enabled: false
+  max_nesting_level: 3
+PaginationSize:
+  enabled: false
+  min_size: 1
+  max_size: 50
+ParserBlockingJavaScript:
+  enabled: false
+ParserBlockingScriptTag:
+  enabled: false
+RemoteAsset:
+  enabled: false
+RequiredDirectories:
+  enabled: true
+RequiredLayoutThemeObject:
+  enabled: true
+SchemaJsonFormat:
+  enabled: true
+  severity: style
+  start_level: 0
+  indent: '    '
+SpaceInsideBraces:
+  enabled: true
+SyntaxError:
+  enabled: true
+TemplateLength:
+  enabled: false
+  max_length: 600
+  exclude_schema: true
+  exclude_stylesheet: true
+  exclude_javascript: true
+TranslationKeyExists:
+  enabled: true
+UndefinedObject:
+  enabled: false
+  exclude_snippets: true
+UnknownFilter:
+  enabled: true
+UnusedAssign:
+  enabled: false
+UnusedSnippet:
+  enabled: false
+ValidHTMLTranslation:
+  enabled: true
+ValidJson:
+  enabled: true
+ValidSchema:
+  enabled: false

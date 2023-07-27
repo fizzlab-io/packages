@@ -1,0 +1,4 @@
+{
+    "extends": "@fizzlab.io/tsconfig/default.json",
+    "include": [".", "node_modules/@fizzlab.io/types"]
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>@fizzlab.io/vite-plugin-shopify</title>
+  <style>
+    :root {
+      --accent: 100 108 255;
+      --accent-2: 149 191 70;
+      --bg-2: 246 246 247;
+      --bg-1: 255 255 255;
+      --text: 60 60 67;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit;
+    }
+
+    html {
+      box-sizing: border-box;
+      height: 100%;
+      background-color: rgb(var(--bg-1));
+      font-family: system-ui,sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100%;
+      padding: 0 1.5rem;
+      margin: 0;
+      color: rgba(var(--text) / 0.92);
+    }
+
+    code {
+      padding: 0.3em 0.45em;
+      background: rgba(var(--accent) / 12%);
+      color: rgb(var(--accent));
+      font-family: Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace;
+      font-size: .875em;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+
+    a {
+      color: rgb(var(--accent));
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    p {
+      margin-top: 1.5rem;
+    }
+
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    .icon-logo {
+      width: 4rem;
+      height: 4rem;
+    }
+
+    .icon-logo:hover {
+      filter: drop-shadow(0 0 1.5rem rgba(var(--accent) / 0.67));
+    }
+
+    .icon-logo--shopify:hover {
+      filter: drop-shadow(0 0 1.5rem rgba(var(--accent-2) / 0.67));
+    }
+
+    .icon-plus {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding-bottom: 2rem;
+    }
+
+    .main {
+      padding: 2.5rem;
+      max-width: 36rem;
+      width: 100%;
+      background: rgb(var(--bg-2));
+      border-radius: 0.4rem;
+      line-height: 1.75;
+    }
+
+    .footer {
+      padding-top: 2rem;
+      border-top: 1px solid rgba(var(--accent) / 25%);
+    }
+
+    .content {
+      padding-bottom: 2rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-2: 37 37 41;
+        --bg-1: 30 30 32;
+        --text: 255 255 245;
+      }
+
+      body {
+        color: rgba(var(--text) / 0.86);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="main">
+    <section class="head">
+      <a href="https://shopify.dev/docs/themes">
+        <svg class="icon-logo icon-logo--shopify" width="2192" height="2500" viewBox="0 0 256 292" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-1.703-1.703-5.029-1.185-6.32-.805-.19.056-3.388 1.043-8.678 2.68-5.18-14.906-14.322-28.604-30.405-28.604-.444 0-.901.018-1.358.044C129.31 3.407 123.644.779 118.75.779c-37.465 0-55.364 46.835-60.976 70.635-14.558 4.511-24.9 7.718-26.221 8.133-8.126 2.549-8.383 2.805-9.45 10.462C21.3 95.806.038 260.235.038 260.235l165.678 31.042 89.77-19.42S223.973 58.8 223.775 57.34zM156.49 40.848l-14.019 4.339c.005-.988.01-1.96.01-3.023 0-9.264-1.286-16.723-3.349-22.636 8.287 1.04 13.806 10.469 17.358 21.32zm-27.638-19.483c2.304 5.773 3.802 14.058 3.802 25.238 0 .572-.005 1.095-.01 1.624-9.117 2.824-19.024 5.89-28.953 8.966 5.575-21.516 16.025-31.908 25.161-35.828zm-11.131-10.537c1.617 0 3.246.549 4.805 1.622-12.007 5.65-24.877 19.88-30.312 48.297l-22.886 7.088C75.694 46.16 90.81 10.828 117.72 10.828z" fill="#95BF46"/><path d="M221.237 54.983c-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-.637-.634-1.496-.959-2.394-1.099l-12.527 256.233 89.762-19.418S223.972 58.8 223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357" fill="#5E8E3E"/><path d="M135.242 104.585l-11.069 32.926s-9.698-5.176-21.586-5.176c-17.428 0-18.305 10.937-18.305 13.693 0 15.038 39.2 20.8 39.2 56.024 0 27.713-17.577 45.558-41.277 45.558-28.44 0-42.984-17.7-42.984-17.7l7.615-25.16s14.95 12.835 27.565 12.835c8.243 0 11.596-6.49 11.596-11.232 0-19.616-32.16-20.491-32.16-52.724 0-27.129 19.472-53.382 58.778-53.382 15.145 0 22.627 4.338 22.627 4.338" fill="#FFF"/></svg>
+      </a>
+      <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon-plus" fill="none" viewBox="0 0 10 10"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01H1z" fill="currentColor"/></svg>
+      <a href="https://vitejs.dev/">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon-logo" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="IconifyId1813088fe1fbc01fb466" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="IconifyId1813088fe1fbc01fb467" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#IconifyId1813088fe1fbc01fb466)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.574 4.796 6.877 9.62Z"></path><path fill="url(#IconifyId1813088fe1fbc01fb467)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>
+      </a>
+    </section>
+    <section class="content">
+      <p>This is the Vite development server that provides Hot Module Replacement for your Shopify theme's assets, such as scripts or styles.</p>
+      <p>To access your Shopify theme, you will need to serve it locally using the <a href="https://shopify.dev/docs/themes/tools/cli/commands">Shopify CLI</a> and the <code>shopify theme dev</code> command.</p>
+    </section>
+    <section class="footer">
+      <p>
+        Want more information on this Shopify Vite integration?
+        <br>
+        <a href="https://github.com/barrel/barrel-shopify/tree/main/packages/vite-plugin-shopify">Read the docs →</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

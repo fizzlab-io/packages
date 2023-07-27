@@ -13,5 +13,6 @@
         "skipLibCheck": true,
         "skipDefaultLibCheck": true
     },
+    "include": ["node_modules/@fizzlab.io/types"],
     "exclude": ["node_modules"]
 }

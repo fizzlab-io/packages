@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@fizzlab.io/tsconfig": "workspace:*",
+    "@fizzlab.io/vite-plugin-shopify": "workspace:*",
     "@fizzlab.io/vite-plugin-shopify-schema": "workspace:*"
   }
 }

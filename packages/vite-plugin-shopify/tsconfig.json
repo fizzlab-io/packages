@@ -1,0 +1,15 @@
+{
+    "extends": "@fizzlab.io/tsconfig/default.json",
+    "compilerOptions": {
+        "typeRoots": [
+            "node_modules/@types",
+            "node_modules/@fizzlab.io/types"
+        ]
+    },
+    "include": ["."],
+    "exclude": [
+        "dist",
+        "build",
+        "node_modules"
+    ]
+}

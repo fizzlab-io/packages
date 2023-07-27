@@ -1,0 +1,125 @@
+{%- liquid
+    render "vite" with "@/sections/instagram-feed/index.ts"
+    render "vite" with "@/sections/instagram-feed/styles.postcss", preload_stylesheet: true
+
+    comment
+        Generate and concat all section styles
+    endcomment
+
+    assign section_styles = ""
+
+    include "function.css-variable", name: "section-background-color", value: section.settings.background_color
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+        Generate section spacing styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.section_spacing, limit: 1, apply_scalar: true
+    assign section_spacing = unit_values
+    include "function.css-variable", name: "section-spacing", value: section_spacing
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+        Generate section padding styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.padding, limit: 4, apply_scalar: true
+    assign section_padding = unit_values
+    include "function.css-variable", name: "section-padding", value: section_padding
+    assign section_styles = section_styles | append: css_variable
+
+    comment
+        Generate section margin styles
+    endcomment
+
+    include "function.unit-values", input: section.settings.margins, limit: 4, apply_scalar: true
+    assign section_margins = unit_values
+    include "function.css-variable", name: "section-margins", value: section_margins
+    assign section_styles = section_styles | append: css_variable
+-%}
+
+<instagram-feed> </instagram-feed>
+
+{% schema %}
+    {
+        "name": "Instagram Feed",
+        "tag": "section",
+        "settings": [
+            {
+                "type": "paragraph",
+                "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+            },
+            {
+                "type": "header",
+                "content": "Section Settings"
+            },
+            {
+                "type": "paragraph",
+                "content": "Tempor consectetur occaecat occaecat occaecat. Ad cupidatat minim anim consectetur do laboris."
+            },
+            {
+                "type": "select",
+                "id": "container",
+                "label": "Section container",
+                "default": "container",
+                "options": [
+                    {
+                        "label": "container",
+                        "value": "container"
+                    },
+                    {
+                        "label": "container fluid",
+                        "value": "container fluid"
+                    },
+                    {
+                        "label": "container fullscreen",
+                        "value": "container fullscreen"
+                    }
+                ]
+            },
+            {
+                "type": "text",
+                "id": "section_spacing",
+                "label": "Section spacing",
+                "info": "Controls the spacing between each element within the section.",
+                "default": "32px"
+            },
+            {
+                "type": "text",
+                "id": "padding",
+                "label": "Section padding",
+                "info": "Controls the padding of the section. [📘 Padding documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/padding#syntax)",
+                "default": "80px 0px 80px 0px"
+            },
+            {
+                "type": "text",
+                "id": "margins",
+                "label": "Section margins",
+                "info": "Controls the margins of the section. [📘 Margin documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/margin#syntax)",
+                "default": "0px 0px 0px 0px"
+            },
+            {
+                "type": "header",
+                "content": "Color Settings"
+            },
+            {
+                "type": "color",
+                "id": "background_color",
+                "label": "Background color",
+                "default": "#FFFFFF"
+            }
+        ],
+        "blocks": [],
+        "presets": [
+            {
+                "name": "Instagram Feed",
+                "settings": {},
+                "blocks": []
+            }
+        ],
+        "enabled_on": {
+            "templates": ["*"]
+        }
+    }
+{% endschema %}
