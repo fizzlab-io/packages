@@ -1,9 +1,11 @@
 {
     "name": "@fizzlab.io/tsconfig",
     "author": "FizzLab, LLC",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "files": [
-        "default.json"
+        "default.json",
+        "shopify-theme.json",
+        "vite-plugin.json"
     ],
     "devDependencies": {
         "@fizzlab.io/types": "workspace:*"

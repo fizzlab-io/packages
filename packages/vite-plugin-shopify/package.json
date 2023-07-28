@@ -1,42 +1,44 @@
 {
     "name": "@fizzlab.io/vite-plugin-shopify",
     "author": "FizzLab, LLC",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "main": "dist/index.js",
-    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
+    "type": "module",
     "repository": {
         "url": "fizzlab-io/packages",
         "directory": "packages/vite-plugin-shopify"
     },
     "files": [
         "dist",
-        "templates"
+        "public"
     ],
     "exports": {
         ".": {
-            "require": "./dist/index.js",
-            "import": "./dist/index.mjs",
+            "import": "./dist/index.js",
             "types": "./dist/index.d.ts"
         }
     },
     "keywords": [
         "vite",
         "shopify",
-        "vite-plugin"
+        "vite-plugin",
+        "fizzlab"
     ],
     "scripts": {
         "dev": "pnpm watch",
-        "build": "tsup src/index.ts --dts --format cjs,esm --clean --publicDir",
-        "watch": "tsup src/index.ts --dts --format cjs,esm --watch --publicDir",
+        "build": "tsc --build --clean",
+        "watch": "tsc --build --watch",
         "test": "vitest"
     },
     "devDependencies": {
         "@fizzlab.io/tsconfig": "workspace:*",
+        "@fizzlab.io/types": "workspace:*",
         "@fizzlab.io/vite-plugin": "workspace:*",
         "@shopify/prettier-plugin-liquid": "1.2.2",
         "@types/js-yaml": "4.0.5",
         "@types/lodash": "4.14.196",
+        "fast-glob": "3.3.1",
         "prettier": "3.0.0"
     },
     "dependencies": {

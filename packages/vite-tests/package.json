@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@fizzlab.io/types": "workspace:*",
     "@fizzlab.io/tsconfig": "workspace:*",
-    "@fizzlab.io/vite-plugin-shopify": "workspace:*",
-    "@fizzlab.io/vite-plugin-shopify-schema": "workspace:*"
+    "@fizzlab.io/vite-plugin-shopify": "workspace:*"
   }
 }
