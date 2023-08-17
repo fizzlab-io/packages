@@ -1,5 +1,11 @@
 {
     "version": 2,
+    "framework": null,
+    "installCommand": "pnpm install",
+    "buildCommand": "pnpm build",
+    "devCommand": "pnpm dev",
+    "outputDirectory": "dist",
+    "cleanUrls": true,
     "builds": [
         {
             "src": "./dist/index.js",
