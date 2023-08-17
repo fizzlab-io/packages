@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Shopify Theme",
+    "extends": "./default.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "allowJs": true,
+        "checkJs": true,
+        "moduleResolution": "Node",
+        "module": "ESNext",
+        "target": "ESNext",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "types": ["vite", "vite/client", "@fizzlab.io/types"],
+        "rootDirs": ["."]
+    },
+    "exclude": [
+        "/node_modules",
+        "/assets"
+    ]
+}

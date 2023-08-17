@@ -1,4 +1,17 @@
 {
     "extends": "@fizzlab.io/tsconfig/default.json",
-    "include": [".", "node_modules/@fizzlab.io/types"]
+    "compilerOptions": {
+        "outDir": "dist",
+        "module": "ESNext",
+        "declaration": true,
+        "typeRoots": [
+            "node_modules/@types",
+            "node_modules/@fizzlab.io/types"
+        ]
+    },
+    "include": ["."],
+    "exclude": [
+        "dist",
+        "node_modules"
+    ]
 }

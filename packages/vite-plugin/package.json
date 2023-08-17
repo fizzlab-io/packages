@@ -2,26 +2,18 @@
     "name": "@fizzlab.io/vite-plugin",
     "author": "FizzLab, LLC",
     "version": "2.0.0",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "type": "module",
+    "main": "src/index.ts",
     "repository": {
         "url": "fizzlab-io/packages",
         "directory": "packages/vite-plugin"
     },
     "files": [
-        "dist"
+        "src"
     ],
     "exports": {
         ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
+            "default": "./src/index.ts"
         }
-    },
-    "scripts": {
-        "dev": "pnpm watch",
-        "build": "tsc",
-        "watch": "tsc --watch"
     },
     "devDependencies": {
         "@fizzlab.io/tsconfig": "workspace:*",

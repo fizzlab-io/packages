@@ -9,8 +9,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo run build --filter=vite-plugin-*",
-    "dev": "turbo run dev --filter=vite-plugin-* --parallel",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
     "lint": "turbo run lint",
     "change:help": "changeset --help",
     "change:add": "changeset add",
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "2.26.2",
+    "@rollup/plugin-node-resolve": "15.1.0",
     "@types/debug": "4.1.8",
     "@types/node": "20.4.4",
     "@typescript-eslint/eslint-plugin": "6.1.0",
@@ -30,7 +31,11 @@
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "6.1.1",
     "json5": "2.2.3",
+    "nodemon": "3.0.1",
     "prettier": "3.0.0",
+    "rollup": "3.26.3",
+    "rollup-plugin-dts": "5.3.0",
+    "ts-node": "10.9.1",
     "tsup": "7.1.0",
     "turbo": "1.10.9",
     "typescript": "5.1.6",

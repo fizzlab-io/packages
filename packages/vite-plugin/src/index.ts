@@ -1,10 +1,8 @@
 import type { DeepCompleteObject } from '@fizzlab.io/types'
-import type { Plugin, ResolvedConfig, ServerOptions, ResolvedServerOptions } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 import type { PathLike } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import os from 'os'
 import { glob, type GlobOptionsWithFileTypesUnset } from 'glob'
 import chalk from 'chalk'
 import _ from 'lodash'
@@ -76,51 +74,16 @@ export default class VitePlugin<T extends Record<string, any>> {
         return new Date().toLocaleTimeString()
     }
 
-    public get __dirname() {
-        return typeof __dirname !== 'undefined'
-            ? __dirname
-            : path.dirname(fileURLToPath(import.meta.url))
-    }
-
     public get rootDir() {
         return path.resolve(path.join(process.cwd(), path.normalize(this.options.rootDir)))
     }
 
-    public get viteServerUrl(): ViteServerUrl {
-
-        const protocol = this.config.server.https ? 'https' : 'http'
-        const host = resolveHost(this.config.server.host)
-        const port = this.config.server.port || 5173
-
-        function resolveHost(host?: string | boolean): string {
-
-            if (!host) return 'localhost'
-
-            if (host === true) {
-                const nInterface = Object.values(os.networkInterfaces())
-                    .flatMap(nInterface => nInterface ?? [])
-                    .filter(detail => detail && detail.address &&
-                        ((typeof detail.family === 'string' && detail.family === 'IPv4') ||
-                        (typeof detail.family === 'number' && (detail as any).family === 4))
-                    ).filter(detail => {
-                        return detail.address !== '127.0.0.1'
-                    })[0]
-
-                if (!nInterface) return 'localhost'
-                return nInterface.address
-            }
-
-            return host
-
-        }
-
-        return `${protocol}://${host}:${port}`
-
-
-    }
-
     public basename(file: string, trailingSlash: boolean = false): string {
         return trailingSlash ? `${path.basename(file)}/` : path.basename(file)
+    }
+
+    public fileExtension(file: string): string {
+        return path.extname(file)
     }
 
     public basenameWithDirectory(file: string): string {
@@ -142,6 +105,23 @@ export default class VitePlugin<T extends Record<string, any>> {
     public async createDirectory(directory: string, recursive: boolean = true): Promise<void> {
         const directoryExists = await this.fileExists(directory)
         if (!directoryExists) await fs.mkdir(directory, { recursive })
+    }
+
+    public relativePath(from: string, to: string) {
+        return path.normalize(path.relative(from, to))
+    }
+
+    private slash(pathname: string) {
+        const windowsSlashRE = /\\/g
+        return pathname.replace(windowsSlashRE, '/')
+    }
+
+    public normalizePath(pathname: string) {
+        return path.posix.normalize(pathname)
+    }
+
+    public urlPath(directory: string) {
+        return path.normalize(directory).replace(/\/$/, '')
     }
 
     /**

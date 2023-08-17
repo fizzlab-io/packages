@@ -1,0 +1,12 @@
+{
+  "source/counter.ts": {
+    "file": "counter-4ed993c7.js",
+    "isEntry": true,
+    "src": "source/counter.ts"
+  },
+  "source/style.css": {
+    "file": "style-3443e464.css",
+    "isEntry": true,
+    "src": "source/style.css"
+  }
+}

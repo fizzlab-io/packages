@@ -1,13 +1,17 @@
-import type { AddressInfo } from 'node:net'
-import type { ResolvedConfig, ResolvedServerUrls } from 'vite'
+import type { UserConfig, Manifest } from 'vite'
+
 import VitePlugin from '@fizzlab.io/vite-plugin'
 import prettier from 'prettier'
 import prettierPluginLiquid from '@shopify/prettier-plugin-liquid'
+import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import yaml from 'js-yaml'
+import glob from 'fast-glob'
 import _ from 'lodash'
 
 type PluginOptions = {
+
+    sourceDir?: string
 
     /**
      * The path to the theme `schema` directory, relative to the theme root.
@@ -35,14 +39,64 @@ type PluginOptions = {
     sectionsDir?: string
 
     /**
-     * Whether or not to use prettier to format JSON files.
+     * The name of the generated Vite snippet file.
      */
-    prettierJson?: boolean
+    viteSnippet?: `${string}.liquid`
 
-    /**
-     * Whether or not to use prettier to format liquid files.
-     */
-    prettierLiquid?: boolean
+
+    prettierJson?: {
+
+        /**
+         * Whether or not to use prettier to format JSON files.
+         */
+        enabled?: boolean
+
+        /**
+         * Specify the number of spaces per indentation-level.
+         */
+        tabWidth?: number
+
+        /**
+         * Specify the line length that the printer will wrap on.
+         */
+        printWidth?: number
+
+    }
+
+
+    prettierLiquid?: {
+
+        /**
+         * Whether or not to use prettier to format liquid files.
+         */
+        enabled?: boolean
+
+        /**
+         * Specify the number of spaces per indentation-level.
+         */
+        tabWidth?: number
+
+        /**
+         * Specify the line length that the printer will wrap on.
+         */
+        printWidth?: number
+
+        /**
+         * If set to `true`, will indent the contents of the {% schema %} tag.
+         */
+        indentSchema?: boolean
+
+        /**
+         * Use single quotes instead of double quotes in Liquid tag and objects.
+         */
+        liquidSingleQuote?: boolean
+
+        /**
+         * Use single quotes instead of double quotes in embedded languages.
+         */
+        embeddedSingleQuote?: boolean
+
+    }
 
     /**
      * Shopify theme-check configuration.
@@ -304,60 +358,6 @@ type PluginOptions = {
 
     }
 
-    /**
-     * Prettier configuration for JSON and liquid files.
-     * @see https://prettier.io/docs/en/options.html
-     */
-    prettier?: {
-
-        /**
-         * Prettier configuration for JSON files.
-         */
-        json?: {
-
-            /**
-             * Specify the number of spaces per indentation-level.
-             */
-            tabWidth?: number
-
-            /**
-             * Specify the line length that the printer will wrap on.
-             */
-            printWidth?: number
-
-        }
-
-        /**
-         * Prettier configuration for liquid files.
-         */
-        liquid?: {
-
-            /**
-             * Specify the number of spaces per indentation-level.
-             */
-            tabWidth?: number
-
-            /**
-             * Specify the line length that the printer will wrap on.
-             */
-            printWidth?: number
-
-            /**
-             * If set to `true`, will indent the contents of the {% schema %} tag.
-             */
-            indentSchema?: boolean
-
-            /**
-             * Use single quotes instead of double quotes in Liquid tag and objects.
-             */
-            liquidSingleQuote?: boolean
-
-            /**
-             * Use single quotes instead of double quotes in embedded languages.
-             */
-            embeddedSingleQuote?: boolean
-        }
-    }
 }
 
 /**
@@ -369,13 +369,26 @@ export default new VitePlugin<PluginOptions>({
     enforce: 'post',
 
     options: {
-        schemaDir: './schema',
-        modulesDir: './modules',
-        assetsDir: './assets',
-        snippetsDir: './snippets',
-        sectionsDir: './sections',
-        prettierJson: true,
-        prettierLiquid: true,
+        sourceDir: 'source',
+        schemaDir: 'schema',
+        modulesDir: 'modules',
+        assetsDir: 'assets',
+        snippetsDir: 'snippets',
+        sectionsDir: 'sections',
+        viteSnippet: 'vite.liquid',
+        prettierJson: {
+            enabled: true,
+            tabWidth: 4,
+            printWidth: 120
+        },
+        prettierLiquid: {
+            enabled: true,
+            tabWidth: 4,
+            printWidth: 120,
+            indentSchema: true,
+            liquidSingleQuote: false,
+            embeddedSingleQuote: true
+        },
         themecheck: {
             assetPreload: false,
             assetSizeCSS: false,
@@ -413,23 +426,19 @@ export default new VitePlugin<PluginOptions>({
             validHTMLTranslation: true,
             validJson: true,
             validSchema: false
-        },
-        prettier: {
-            json: {
-                tabWidth: 4,
-                printWidth: 120
-            },
-            liquid: {
-                tabWidth: 4,
-                printWidth: 120,
-                indentSchema: true,
-                liquidSingleQuote: false,
-                embeddedSingleQuote: true
-            }
         }
     },
 
     register(plugin) {
+
+        const dirname = typeof __dirname === 'undefined'
+            ? path.dirname(fileURLToPath(import.meta.url))
+            : __dirname
+
+        /**
+         * The absolute path to the theme `source` directory.
+         */
+        const sourceDir = path.resolve(plugin.rootDir, path.normalize(plugin.options.sourceDir))
 
         /**
          * The absolute path to the theme `schema` directory.
@@ -456,26 +465,54 @@ export default new VitePlugin<PluginOptions>({
          */
         const snippetsDir = path.resolve(plugin.rootDir, path.normalize(plugin.options.snippetsDir))
 
+        const viteSnippetName = plugin.options.viteSnippet.replace(/\.[^.]+$/, '')
+        const viteSnippetFile = path.resolve(snippetsDir, plugin.options.viteSnippet)
+
+        const manifestFile = path.resolve(assetsDir, 'manifest.json')
+
+        const STYLE_EXTENSIONS = ['css', 'less', 'sass', 'scss', 'styl', 'stylus', 'pcss', 'postcss']
+        const styleExtensions = `*.{${STYLE_EXTENSIONS.join(',')}}`
+
+        const SCRIPT_EXTENSIONS = ['js', 'jsx', 'ts', 'tsx']
+        const scriptExtensions = `*.{${SCRIPT_EXTENSIONS.join(',')}}`
+
+        const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+        const imageExtensions = `*.{${IMAGE_EXTENSIONS.join(',')}}`
+
+        const LIQUID_EXTENSIONS = ['liquid']
+        const liquidExtensions = `*.{${LIQUID_EXTENSIONS.join(',')}}`
+
+        const JSON_EXTENSIONS = ['json']
+        const jsonExtensions = `*.{${JSON_EXTENSIONS.join(',')}}`
+
         /**
          * Regex pattern for detecting schema imports.
          * @example {"@": "my-schema-template"}
          */
-        const regexSchemaImport = /\{\s?\"\@\":\s?\"(\S+)\"\s?\},?|\{\s+\"schema\":\s?\"(\S+)\"\s+\},?/gms
+        const SCHEMA_IMPORT_REGEX = /\{\s?\"\@\":\s?\"(\S+)\"\s?\},?|\{\s+\"schema\":\s?\"(\S+)\"\s+\},?/gms
 
         /**
          * Regex pattern for detecting JSON schema blocks in liquid files.
          */
-        const regexSchemaBlock = /{% schema %}(.*){% endschema %}/gms
+        const SCHEMA_BLOCK_REGEX = /{% schema %}(.*){% endschema %}/gms
 
-        const styleExtensions = '*.{css,less,sass,scss,styl,stylus,pcss,postcss}'
+        const STYLE_EXTENSION_REGEX = new RegExp(`\\.(${STYLE_EXTENSIONS.join('|')})(\\?.+)?$`)
 
-        const scriptExtensions = '*.{js,jsx,ts,tsx}'
+        function viteSnippetTag(entryPaths: string[], tag: string, firstEntry: boolean = false) {
+            return `{% ${!firstEntry ? 'els' : ''}if ${entryPaths.map(entry => `path == "${entry}"`).join(' or ')} %}\n    ${tag}`
+        }
 
-        const imageExtensions = '*.{jpg,jpeg,png,gif,webp}'
+        function preloadScriptTag(filename: string) {
+            return `<link rel="modulepreload" href="{{ '${filename}' | asset_url | split: '?' | first }}" crossorigin="anonymous">`
+        }
 
-        const liquidExtensions = '*.liquid'
+        function scriptTag(filename: string) {
+            return `<script src="{{ '${filename}' | asset_url | split: "?" | first }}" type="module" crossorigin="anonymous"></script>`
+        }
 
-        const jsonExtensions = '*.json'
+        function stylesheetTag(filename: string) {
+            return `{{ "${filename}" | asset_url | split: "?" | first | stylesheet_tag: preload: preload_stylesheet }}`
+        }
 
         /**
          * ### listAllModules
@@ -670,7 +707,7 @@ export default new VitePlugin<PluginOptions>({
                 enabled: ${plugin.options.themecheck.schemaJsonFormat}
                 severity: style
                 start_level: 0
-                indent: '${Array.from({ length: plugin.options.prettier.liquid.tabWidth + 1 }).join(' ')}'
+                indent: '${Array.from({ length: plugin.options.prettierLiquid.tabWidth + 1 }).join(' ')}'
             SpaceInsideBraces:
                 enabled: ${plugin.options.themecheck.spaceInsideBraces}
             SyntaxError:
@@ -749,6 +786,150 @@ export default new VitePlugin<PluginOptions>({
         }
 
         /**
+         * ### viteSnippet
+         */
+        async function vitesnippet(tags?: string[]): Promise<void> {
+
+            const pathReplacements: Array<[string, string]> = []
+
+            let pathAssignments = `assign path = ${viteSnippetName} | `
+
+            for (const alias of plugin.config.resolve.alias) {
+                if (typeof alias.find === 'string') {
+                    if (['@', '@theme'].includes(alias.find)) {
+                        pathReplacements.push([alias.find, plugin.relativePath(plugin.options.rootDir, alias.replacement)])
+                    } else {
+                        pathReplacements.push([alias.find, plugin.relativePath(sourceDir, alias.replacement)])
+                    }
+                }
+            }
+
+            pathAssignments += pathReplacements.map(([from, to]) => `replace: '${from}/', '${to}/'`).join(' | ')
+
+            const vitesnippetTemplate = `
+            {% comment %}
+            IMPORTANT: This snippet was automatically generated by vite-plugin-shopify.
+            Do not modify this file directly as any changes will by overwritten by the next build.
+            {% endcomment %}
+
+            {%- liquid
+
+                ${pathAssignments}
+                assign path_prefix = path | slice: 0
+
+                if path_prefix == "/"
+                    assign file_url_prefix = "${plugin.viteServerUrl}"
+                else
+                    assign file_url_prefix = "${plugin.viteServerUrl}/${plugin.options.sourceDir}/"
+                endif
+
+                assign file_url = path | prepend: file_url_prefix
+                assign file_name = path | split: "/" | last
+
+                if file_name contains "."
+                    assign file_extension = file_name | split: "." | last
+                endif
+
+                assign css_extensions = "${STYLE_EXTENSIONS.join('|')}" | split: "|"
+                assign is_css = false
+
+                if css_extensions contains file_extension
+                    assign is_css = true
+                endif
+
+            -%}
+
+            <script src="${plugin.viteServerUrl}/@vite/client" type="module"></script>
+
+            {%- if is_css == true -%}
+                {{ file_url | stylesheet_tag }}
+            {%- else -%}
+                <script src="{{ file_url }}" type="module"></script>
+            {%- endif -%}`
+
+            if (!tags || !tags.length) {
+
+                const prettierOutput = await prettierLiquid(vitesnippetTemplate)
+                await plugin.writeFile(viteSnippetFile, prettierOutput)
+
+            } else {
+
+                const prettierOutput = await prettierLiquid(vitesnippetTemplate + '\n\n' + tags.join('\n') + '\n{% endif %}\n')
+                await plugin.writeFile(viteSnippetFile, prettierOutput)
+
+            }
+
+        }
+
+        async function manifest(): Promise<void> {
+
+            const manifestExists = await plugin.fileExists(manifestFile)
+            if (!manifestExists) return
+
+            const manifestContent = await plugin.readFile(manifestFile)
+            const manifest = JSON.parse(manifestContent) as Manifest
+
+            const assetTags: string[] = []
+
+            for (const src of Object.keys(manifest)) {
+
+                const { file, isEntry, css, imports } = manifest[src]
+                const extension = plugin.fileExtension(file)
+
+                if (isEntry === true) {
+
+                    const entryName = plugin.relativePath(plugin.options.sourceDir, src)
+                    const entryPaths = [`/${src}`, entryName]
+                    const entryTags = []
+
+                    if (extension.match(STYLE_EXTENSION_REGEX) !== null) {
+
+                        entryTags.push(stylesheetTag(file))
+
+                    } else {
+
+                        entryTags.push(scriptTag(file))
+
+                        if (typeof css !== 'undefined' && css.length > 0) {
+                            for (const cssFile of css) {
+                                entryTags.push(stylesheetTag(cssFile))
+                            }
+                        }
+
+                        if (typeof imports !== 'undefined' && imports.length > 0) {
+                            for (const importFile of imports) {
+
+                                const chunk = manifest[importFile]
+                                const { css } = chunk
+
+                                entryTags.push(preloadScriptTag(file))
+
+                                if (typeof css !== 'undefined' && css.length) {
+                                    for (const cssFile of css) {
+                                        entryTags.push(stylesheetTag(cssFile))
+                                    }
+                                }
+
+                            }
+                        }
+
+                        assetTags.push(viteSnippetTag(entryPaths, entryTags.join('\n    '), assetTags.length === 0))
+
+                    }
+
+                    if (src === 'style.css' && !plugin.config.build.cssCodeSplit) {
+                        assetTags.push(viteSnippetTag([src], stylesheetTag(file), false))
+                    }
+
+                }
+
+            }
+
+            await vitesnippet(assetTags)
+
+        }
+
+        /**
          * ### createProjectDirectories
          * Creates the relevant project directories if they don't exist.
          */
@@ -771,6 +952,8 @@ export default new VitePlugin<PluginOptions>({
                 plugin.basename(schemaDir, true),
                 plugin.basename(modulesDir, true)
             )
+
+            vitesnippet()
 
         }
 
@@ -797,7 +980,9 @@ export default new VitePlugin<PluginOptions>({
          */
         async function prettierJson(json: string): Promise<string> {
 
-            return await prettier.format(json, _.merge(plugin.options.prettier.json, {
+            const prettierConfig = _.omit(plugin.options.prettierJson, ['enabled']) as prettier.Options
+
+            return await prettier.format(json, _.merge(prettierConfig, {
                 parser: 'json',
                 singleQuote: false,
                 quoteProps: 'preserve'
@@ -813,7 +998,9 @@ export default new VitePlugin<PluginOptions>({
          */
         async function prettierLiquid(liquid: string): Promise<string> {
 
-            return await prettier.format(liquid, _.merge(plugin.options.prettier.liquid, {
+            const prettierConfig = _.omit(plugin.options.prettierLiquid, ['enabled']) as prettier.Options
+
+            return await prettier.format(liquid, _.merge(prettierConfig, {
                 parser: 'liquid-html',
                 plugins: [prettierPluginLiquid]
             }) as prettier.Options)
@@ -836,7 +1023,7 @@ export default new VitePlugin<PluginOptions>({
              */
             const moduleFilename = plugin.basename(modulePath)
 
-            if (plugin.options.prettierLiquid) {
+            if (plugin.options.prettierLiquid.enabled) {
 
                 const moduleContent = await plugin.readFile(modulePath)
                 const prettierModuleContent = await prettierLiquid(moduleContent)
@@ -941,42 +1128,55 @@ export default new VitePlugin<PluginOptions>({
         return {
 
             transform(code) {
-
                 if (plugin.config.command === 'serve') {
                     return code.replace(/VITE_SERVER_URL/g, plugin.viteServerUrl)
                 }
-
             },
 
-            async configureServer({ httpServer, middlewares }) {
+            config(userConfig) {
 
-                httpServer?.once('listening', async () => {
+                return _.merge(userConfig, {
+                    publicDir: false,
+                    build: {
+                        outDir: plugin.options.assetsDir,
+                        assetsDir: '',
+                        manifest: true,
+                        rollupOptions: {
+                            input: glob.sync(plugin.normalizePath(path.join(plugin.options.sourceDir, '**/*'))),
+                            external: ['os']
+                        }
+                    },
+                    resolve: {
+                        alias: {
+                            '@': plugin.options.rootDir,
+                            '@theme': plugin.options.rootDir,
+                            '@modules': modulesDir,
+                            '@schema': schemaDir
+                        }
+                    },
+                    server: {
+                        strictPort: true,
+                        origin: 'VITE_SERVER_URL'
+                    }
+                } as UserConfig)
+            },
 
-                    console.log(plugin.viteServerUrl)
-
-                })
-
+            async configureServer({ middlewares }) {
                 return () => middlewares.use( async (req, res, next) => {
-
                     if (req.url === '/index.html') {
-                        const html = await plugin.readFile(path.join(plugin.__dirname, 'plugin.html'))
+                        const html = await plugin.readFile(path.join(dirname, '../public/index.html'))
                         res.statusCode = 404
                         res.end(html)
                     }
-
                     next()
-
                 })
-
             },
 
             async buildStart() {
-
+                console.log(dirname)
                 await createProjectDirectories()
                 await createProjectFiles()
-
                 await handleProjectChanges()
-
             },
 
             async handleHotUpdate({ file }) {
@@ -984,12 +1184,10 @@ export default new VitePlugin<PluginOptions>({
                 await handleProjectChanges(file)
             },
 
-            closeBundle() {
-
-                if (plugin.config.command === 'serve') {
-                    return
-                }
-
+            async closeBundle() {
+                console.log('closeBundle called')
+                if (plugin.config.command === 'serve') return
+                await manifest()
             }
 
         }

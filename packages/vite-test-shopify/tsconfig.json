@@ -1,0 +1,3 @@
+{
+  "extends": "@fizzlab.io/tsconfig/shopify-theme.json"
+}

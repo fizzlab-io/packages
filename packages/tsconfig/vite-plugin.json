@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Vite Plugin",
+    "extends": "./default.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "module": "ESNext",
+        "declaration": true,
+        "types": ["vite/client", "@fizzlab.io/types"]
+    },
+    "exclude": [
+        "dist",
+        "node_modules"
+    ]
+}
